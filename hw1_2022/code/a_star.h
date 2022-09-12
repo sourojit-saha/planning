@@ -38,7 +38,7 @@ int node_info(node node_0){
     std::cout<<"f:---------------> "<<node_0.f<<std::endl;
     std::cout<<"parent_ptr:------> "<<node_0.parent_ptr<<std::endl;
     std::cout<<"child_ptr:-------> "<<node_0.child_ptr<<std::endl;
-    std::cout<<"state:-------> "<<node_0.state<<std::endl;
+    std::cout<<"state:-----------> "<<node_0.state<<std::endl;
 
     return 0;
 };
