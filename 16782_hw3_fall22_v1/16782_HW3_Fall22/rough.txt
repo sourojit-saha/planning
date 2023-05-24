@@ -1,0 +1,59 @@
+void getGroundedActions(const unordered_set<Action, ActionHasher, ActionComparator> &actions, const unordered_set<string> &all_symbols, std::list<GroundedAction>&all_actions){
+    vector<string> symbols (all_symbols.begin(), all_symbols.end());
+    vector<bool> check (symbols.size(), false);
+    vector<list<string>> combinations;
+
+    for(int i=1;i<=symbols.size();i++){
+        getCombs(symbols, i, 0, 0, check, symbols.size(), combinations);
+    }
+
+    std::vector<std::list<std::string>> permutations;
+    getPerms(combinations, permutations);
+
+    for(const auto &action: actions){
+        for(const auto &permutation: permutations){
+            if(action.get_args().size() == permutation.size()){
+                                
+                auto preconditions = action.get_preconditions();
+                auto effects = action.get_effects();
+                auto arg_names = action.get_args();
+
+                unordered_map<string, string> string_map;
+
+                unordered_set<GroundedCondition, GroundedConditionHasher, GroundedConditionComparator> grounded_preconditions;
+                unordered_set<GroundedCondition, GroundedConditionHasher, GroundedConditionComparator> grounded_effects;
+
+                for(auto& symbol: all_symbols){
+                    string_map[symbol] = symbol;
+                }
+
+                auto it = permutation.begin();
+                for(auto& arg: arg_names){
+                    string_map[arg] = *it;
+                    it++;
+                }
+
+                for(auto& effect: effects){
+                    list<string> grounded_args;
+                    for(auto& arg: effect.get_args()){
+                        grounded_args.push_back(string_map[arg]);
+                    }
+                    GroundedCondition grounded_effect(effect.get_predicate(), grounded_args, effect.get_truth());
+                    grounded_effects.insert(grounded_effect);
+                }
+
+                for(auto& condition: preconditions){
+                    list<string> grounded_args;
+                    for(auto& arg: condition.get_args()){
+                        grounded_args.push_back(string_map[arg]);
+                    }
+                    GroundedCondition grounded_condition(condition.get_predicate(), grounded_args, condition.get_truth());
+                    grounded_preconditions.insert(grounded_condition);
+                }
+
+                GroundedAction grounded_action(action.get_name(), permutation, grounded_preconditions, grounded_effects);
+                all_actions.push_back(grounded_action);
+            }
+        }
+    }
+}
